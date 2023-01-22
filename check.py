@@ -7,12 +7,13 @@ from sys import argv
 # data from a Microsoft Excel spreadsheet is processed and updated
 
 
-def check_status(input_data):
+def query_efz_status(input_data):
     url = "https://nami.dpsg.de/ica/sgb-acht-bescheinigung-pruefen"
     msg_fail = '<p class="failure-msg">Bescheinigung ist NICHT gültig</p>'
-    msg_success = '<p class="success-msg">Bescheinigung ist gültig</p>'
+    msg_not_valid = '<p class="failure-msg">Die Echtheit der Bescheinigung kann nicht bestätigt werden.</p>'
+    msg_success = '<p class="success-msg">Das Dokument ist echt. Die Bescheinigung wurde korrekt erstellt.</p>'
 
-    # these could be checked beforehand querying the webpage!
+    # these could be logically checked beforehand querying the webpage!
     msg_invalid_id = '<p class="validation-msg">Identifikationsnummer: Feld ist ein Pflichtfeld.&lt;br&gt;</p>'
     msg_invalid_surname = '<p class="validation-msg">Nachname: Feld ist ein Pflichtfeld.&lt;br&gt;</p>'
     msg_invalid_firstname = '<p class="validation-msg">Vorname: Feld ist ein Pflichtfeld.&lt;br&gt;</p>'
@@ -31,68 +32,91 @@ def check_status(input_data):
             status = "!!! NACHNAME PFLICHTFELD !!!"
         elif msg_invalid_firstname in r.text:
             status = "!!! VORNAME PFLICHTFELD !!!"
+        elif msg_not_valid in r.text:
+            status = "!!! NICHT BESTÄTIGT !!!"
         else:
             # should not happen ;)
 
-            # for debugging:
+            # print response for debugging:
             print('--------------')
             print(r.text)
             print('--------------')
             pass
-    return status
+
+        timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    return status, timestamp
 
 
-def process_excel_file(filename, update=True):
-    wb = openpyxl.load_workbook(filename)
-    sheet = wb.active
 
-    # dependent on the specific file structure the data is spread across different
-    # columns; we need to define the column indices here
-    # (unless there's some auto-detection feature implemented, or a specific
-    # default naming scheme is used)
+def get_query_input_from_sheet_row(sheet, row_idx):
+    # dependent on the specific file structure the data is spread across different columns;
+    # we need to define the column indices here;
+    # we need first name, surname, EfZ number and birthday to start the query
+    # TODO: make this a command line parameter (or somehow add auto-detection)
+    #       (unless there's some auto-detection feature implemented, or a specific
+    #       default naming scheme is used)
     col_firstname = 1
     col_surname = 2
     col_fznumber = 3
     col_birthdate = 4
+
+    birthdate = sheet.cell(row=row_idx, column=col_birthdate).value
+    if birthdate:
+        if type(birthdate) == datetime.datetime:
+            birthdate = birthdate.strftime("%d.%m.%Y")
+    else:
+        birthdate = ""
+
+    fznumber = sheet.cell(row=row_idx, column=col_fznumber).value
+    if not fznumber:
+        fznumber = ""
+
+    firstname = sheet.cell(row=row_idx, column=col_firstname).value
+    if not firstname:
+        firstname = ""
+
+    surname = sheet.cell(row=row_idx, column=col_surname).value
+    if not surname:
+        surname = ""
+
+    return {
+        'fzNummer': fznumber,
+        'vorname': firstname,
+        'nachname': surname,
+        'geburtsdatum': birthdate
+    }
+
+
+def process_excel_file(filename, update=True):
+    # TODO: we could also make this CSV input format compatible
+    wb = openpyxl.load_workbook(filename)
+    sheet = wb.active
+
+    # dependent on the specific file structure the data is spread across different columns;
+    # we need to define the column indices here;
+    # status and update timestamp are used to store the response in the same document
+    # TODO: make this a command line parameter (or somehow add auto-detection)
+    #       (unless there's some auto-detection feature implemented, or a specific
+    #       default naming scheme is used)
     col_status = 5
     col_update_timestamp = 6
-    for i in range(2, sheet.max_row + 1):
-        birthdate = sheet.cell(row=i, column=col_birthdate).value
-        if birthdate:
-            if type(birthdate) == datetime.datetime:
-                birthdate = birthdate.strftime("%d.%m.%Y")
-        else:
-            birthdate = ""
 
-        fznumber = sheet.cell(row=i, column=col_fznumber).value
-        if not fznumber:
-            fznumber = ""
+    start_row = 2  # skip the header row as it usually contains the headings
+    # TODO: make this a command line parameter (or somehow add auto-detection)
+    for row_idx in range(start_row, sheet.max_row + 1):
+        in_data = get_query_input_from_sheet_row(sheet, row_idx=row_idx)
 
-        firstname = sheet.cell(row=i, column=col_firstname).value
-        if not firstname:
-            firstname = ""
+        efz_status, timestamp = query_efz_status(in_data)
 
-        surname = sheet.cell(row=i, column=col_surname).value
-        if not surname:
-            surname = ""
-
-        # TODO/FIXME: handle empty string
-        in_data = {
-            'fzNummer': fznumber,
-            'vorname': firstname,
-            'nachname': surname,
-            'geburtsdatum': birthdate
-        }
-        # for debugging:
-        # print(in_data)
-
-        timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        status = check_status(in_data)
-        output_format = f"[{timestamp}] {in_data.get('vorname'):>12} {in_data.get('nachname'):>12}:  {status}"
+        # visualize result (along with some input data) on the command line
+        # TODO: add command line flag (verbosity? default=False)
+        output_format = f"[{timestamp}] {in_data.get('vorname'):>20} {in_data.get('nachname'):>20}:  {efz_status}"
         print(output_format)
 
-        sheet.cell(row=i, column=col_status).value = status
-        sheet.cell(row=i, column=col_update_timestamp).value = timestamp
+        # write result back to the workbook
+        # TODO: add command line flag (name could be "--update"/"--dry-run"/"--print-only"; default=True)
+        sheet.cell(row=row_idx, column=col_status).value = efz_status
+        sheet.cell(row=row_idx, column=col_update_timestamp).value = timestamp
 
     # data may be fed back to Excel into two columns
     if update:
