@@ -6,8 +6,9 @@ from sys import argv
 # Check of EfZ-Nachweis via DPSG NaMi 2.2 web interface
 # data from a Microsoft Excel spreadsheet is processed and updated
 
+
 def check_status(input_data):
-    url="https://nami.dpsg.de/ica/sgb-acht-bescheinigung-pruefen"
+    url = "https://nami.dpsg.de/ica/sgb-acht-bescheinigung-pruefen"
     msg_fail = '<p class="failure-msg">Bescheinigung ist NICHT gültig</p>'
     msg_success = '<p class="success-msg">Bescheinigung ist gültig</p>'
 
@@ -56,27 +57,27 @@ def process_excel_file(filename, update=True):
     col_status = 5
     col_update_timestamp = 6
     for i in range(2, sheet.max_row + 1):
-        birthdate = sheet.cell(row = i, column = col_birthdate).value
+        birthdate = sheet.cell(row=i, column=col_birthdate).value
         if birthdate:
             if type(birthdate) == datetime.datetime:
                 birthdate = birthdate.strftime("%d.%m.%Y")
         else:
             birthdate = ""
 
-        fznumber = sheet.cell(row = i, column = col_fznumber).value
+        fznumber = sheet.cell(row=i, column=col_fznumber).value
         if not fznumber:
             fznumber = ""
 
-        firstname = sheet.cell(row = i, column = col_firstname).value
+        firstname = sheet.cell(row=i, column=col_firstname).value
         if not firstname:
             firstname = ""
 
-        surname = sheet.cell(row = i, column = col_surname).value
+        surname = sheet.cell(row=i, column=col_surname).value
         if not surname:
             surname = ""
 
         # TODO/FIXME: handle empty string
-        in_data={
+        in_data = {
             'fzNummer': fznumber,
             'vorname': firstname,
             'nachname': surname,
@@ -98,7 +99,7 @@ def process_excel_file(filename, update=True):
         wb.save(filename)
 
 
-if __name__=="__main__":
+if __name__ == "__main__":
     if len(argv) >= 2:
         process_excel_file(argv[1])
     else:
