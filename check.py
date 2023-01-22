@@ -128,6 +128,12 @@ def process_excel_file(filename, update=True):
 
 if __name__ == "__main__":
     if len(argv) >= 2:
-        process_excel_file(argv[1])
+        filename = argv[1]
+        try:
+            process_excel_file(filename)
+        except FileNotFoundError:
+            print(f"Could not find file '{filename}'.")
+        except openpyxl.utils.exceptions.InvalidFileException:
+            print(f"File type of '{filename}' is currently not supported (supported formats are .xlsx, .xlsm, .xltx and .xltm).")
     else:
         print(f"Usage: python {argv[0]} <excel-filename>")
