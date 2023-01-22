@@ -17,6 +17,7 @@ def query_efz_status(input_data):
     msg_invalid_id = '<p class="validation-msg">Identifikationsnummer: Feld ist ein Pflichtfeld.&lt;br&gt;</p>'
     msg_invalid_surname = '<p class="validation-msg">Nachname: Feld ist ein Pflichtfeld.&lt;br&gt;</p>'
     msg_invalid_firstname = '<p class="validation-msg">Vorname: Feld ist ein Pflichtfeld.&lt;br&gt;</p>'
+    msg_invalid_birthdate = '<p class="validation-msg">Geburtsdatum: Feld ist ein Pflichtfeld.&lt;br&gt;</p>'
 
     r = requests.post(url, input_data, timeout=5)
     status = "!!! UNBEKANNT !!!"
@@ -32,6 +33,8 @@ def query_efz_status(input_data):
             status = "!!! NACHNAME PFLICHTFELD !!!"
         elif msg_invalid_firstname in r.text:
             status = "!!! VORNAME PFLICHTFELD !!!"
+        elif msg_invalid_birthdate in r.text:
+            status = "!!! GEB.DATUM PFLICHTFELD !!!"
         elif msg_not_valid in r.text:
             status = "!!! NICHT BESTÄTIGT !!!"
         else:
