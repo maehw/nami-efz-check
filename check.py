@@ -109,11 +109,11 @@ def get_query_input_from_sheet_row(cli_args, sheet, row_idx):
 
 def process_excel_file(cli_args):
     filename = cli_args.filename
-    log.debug(f"Processing file '{filename}'")
 
     # TODO: we could also make this CSV input format compatible
     wb = openpyxl.load_workbook(filename)
     sheet = wb.active
+    log.debug(f"Processing file '{filename}'")
 
     start_row = cli_args.start_row  # skip the header row as it usually contains the headings
     log.debug(f"Start row: {start_row}")
