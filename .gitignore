@@ -1,3 +1,4 @@
 *.xls*
 *.csv
+*.idea
 .DS_Store

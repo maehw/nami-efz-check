@@ -71,7 +71,7 @@ optional arguments:
   -v, --verbose         log level (-v: INFO, -vv: DEBUG)
 ```
 
-## Examples
+## Options and customizations (with examples)
 
 ### Default
 
@@ -101,7 +101,7 @@ python check.py -f test.xls
 [2023-01-23 11:15:56] #6                    Otto    Normalverbraucher   Eingangsdaten unvollständig
 ```
 
-## Custom column order
+### Custom column order
 
 The default column order may not be the best fit for your input data and you may want to define your own one - but how to do it?
 
@@ -135,7 +135,7 @@ Meaning:
 If you're not sure about it and want to check before sending hundreds of invalid queries or breaking your Excel files: verbosity flags (limit output, add explanations) and dry-runs (suppresses requests) can help. Read on for more info.
 
 
-## Custom start row
+### Custom start row
 
 This script assumes that there is one row in the table that serves as the table's "head". Your data may have a bigger head (more than one line) or no head at all. This is why you can define a custom start row using command line parameter `--start-row` (`-sr`). Define the row number where the first row number is 1 (and not 0).
 
@@ -155,7 +155,7 @@ python check.py -f test.xls --start-row 3
 python check.py -f test.xls --start-row 1
 ```
 
-## Verbosity
+### Verbosity
 
 Add `-v` for additional output at log level `INFO` and `--vv` for additional log level `DEBUG`.
 
@@ -191,7 +191,7 @@ check.py test.xlsx --dont-print -vv
 ```
 
 
-## Don't write (everything) back to Excel file
+### Don't write (everything) back to Excel file
 
 Multiple use cases may exist where you do not want to write something back to the Excel file.
 
