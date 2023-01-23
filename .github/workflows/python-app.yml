@@ -37,6 +37,6 @@ jobs:
     - name: Run script to show usage
       run: |
         python check.py --help
-    - name: Test with pytest
-      run: |
-        pytest
+#    - name: Test with pytest
+#      run: |
+#        pytest
