@@ -3,7 +3,6 @@ import requests
 import openpyxl
 import datetime
 import argparse
-import coloredlogs
 import logging
 from openpyxl.utils.exceptions import InvalidFileException
 
@@ -219,13 +218,11 @@ if __name__ == "__main__":
     log = logging.getLogger(__name__)
 
     if args.verbose > 0:
-        log_level = 'INFO'
+        log.setLevel(logging.INFO)
         if args.verbose > 1:
-            log_level = 'DEBUG'
+            log.setLevel(logging.DEBUG)
     else:
-        log_level = 'WARNING'
-
-    coloredlogs.install(level=log_level, fmt='[%(levelname)8s] %(message)s')
+        log.setLevel(logging.WARNING)
 
     # pre-check validity of given column numbers
     num_cols = len(args.columns)

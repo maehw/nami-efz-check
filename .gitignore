@@ -1,4 +1,5 @@
 *.xls*
 *.csv
 *.idea
+.venv
 .DS_Store

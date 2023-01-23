@@ -24,6 +24,20 @@ There is a variety of command line options, e.g. to perform dry-runs or define a
 > There's no warranty that this script breaks your Excel file - either by misusing it or by accident. Remember to backup your data!
 
 
+# Installation
+
+There's currently no standalone/pre-built version available.
+
+You will need a Python 3 environment and the Python script as source code.
+
+```
+python -m venv .venv
+. .venv/bin/activate
+pip install -r requirements.txt
+```
+
+Ready to go...
+
 # Usage
 
 ## tl;dr
@@ -33,7 +47,7 @@ There is a variety of command line options, e.g. to perform dry-runs or define a
 ⬇
 
 ```
-python check.py -f test.xlsx
+python check.py test.xlsx
 ```
 
 ⬇
@@ -45,29 +59,22 @@ python check.py -f test.xlsx
 Call `python check.py --help` to get a detailed list of command line options:
 
 ```
-usage: check.py [-h] [-c COLUMNS [COLUMNS ...]] [-n] [-dp] [-sr START_ROW]
-                [-v]
-                filename
+usage: check.py [-h] [-c COLUMNS [COLUMNS ...]] [-n] [-dp] [-sr START_ROW] [-v] filename
 
 check.py checks EfZ-Nachweise in DPSG NaMi 2.2 using Excel and HTTP requests
 
 positional arguments:
   filename              path to Excel input/output file
 
-optional arguments:
+options:
   -h, --help            show this help message and exit
   -c COLUMNS [COLUMNS ...], --columns COLUMNS [COLUMNS ...]
-                        column numbers for the Excel workbook in the order
-                        Vorname (prename), Nachname (surname), Geburtsdatum
-                        (date of birth), EfZ ID (EfZ-Nummer), Status and
-                        Timestamp where the first column has number 1 (not 0)
-  -n, --dry-run         Dont actually send the HTTP requests to the server and
-                        dont write back to the Excel file. just parse the
-                        input data.
+                        column numbers for the Excel workbook in the order Vorname (prename), Nachname (surname), Geburtsdatum (date of birth), EfZ ID (EfZ-
+                        Nummer), Status and Timestamp where the first column has number 1 (not 0)
+  -n, --dry-run         Dont actually send the HTTP requests to the server and dont write back to the Excel file. just parse the input data.
   -dp, --dont-print     Dont print the data on the standard output.
   -sr START_ROW, --start-row START_ROW
-                        Start row (to skip parsing of header lines); the first
-                        row has number 1 (not 0).
+                        Start row (to skip parsing of header lines); the first row has number 1 (not 0).
   -v, --verbose         log level (-v: INFO, -vv: DEBUG)
 ```
 
@@ -90,7 +97,7 @@ Assumes that the columns for **output data** are given in the default column ord
 1. timestamp of the check.
 
 ```
-python check.py -f test.xls
+python check.py test.xls
                       ID                 Vorname             Nachname   Status
 ----------------------------------------------------------------------------------------------------
 [2023-01-23 11:15:55] #1                   Erika           Mustermann   Ungültig oder Abfrage fehlerhaft
@@ -144,7 +151,7 @@ This script assumes that there is one row in the table that serves as the table'
 ![Two head rows](./doc/longer-head.png)
 
 ```
-python check.py -f test.xls --start-row 3
+python check.py test.xls --start-row 3
 ```
 
 **Use case #2:** No head rows, i.e. start row is `1`:
@@ -152,7 +159,7 @@ python check.py -f test.xls --start-row 3
 ![Two head rows](./doc/no-head.png)
 
 ```
-python check.py -f test.xls --start-row 1
+python check.py test.xls --start-row 1
 ```
 
 ### Verbosity
@@ -160,16 +167,16 @@ python check.py -f test.xls --start-row 1
 Add `-v` for additional output at log level `INFO` and `--vv` for additional log level `DEBUG`.
 
 ```
-python check.py -f test.xls -v
+python check.py test.xls -v
 ```
 ```
-python check.py -f test.xls -vv
+python check.py test.xls -vv
 ```
 
 You can provide the flag `--dont-print` (`-dp`) if the query input data and the EfZ validity status result and timestamp shall not be displayed on the standard output (and only written back to the Excel file):
 
 ```
-python check.py -f test.xls --dont-print
+python check.py test.xls --dont-print
 ```
 
 Arbitrary combinations are allowed, e.g.:
