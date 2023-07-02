@@ -1,5 +1,6 @@
 *.xls*
 *.csv
 *.idea
+*.pdf
 .venv
 .DS_Store
