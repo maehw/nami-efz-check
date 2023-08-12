@@ -1,6 +1,5 @@
 from bescheinigungs_check import BescheinigungsCheck
 import os
-import datetime
 from tkinter import TOP, BOTTOM, Label, font
 from tkinterdnd2 import *
 
@@ -30,11 +29,6 @@ def get_path(event):
     birthdate = check.get_birthdate()
 
     details_label.configure(text=f"{number} / {firstnames} {surname}, geb. am {birthdate}")
-
-    timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-
-    output_format = f"[{timestamp}] {firstnames} {surname}   {efz_status}"
-    print(output_format)
 
     if efz_status:
         status_label.configure(text='Gültig.')
