@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
-import requests
+
+from bescheinigungs_check import BescheinigungsCheck
 import openpyxl
 import datetime
 import argparse
@@ -8,50 +9,6 @@ from openpyxl.utils.exceptions import InvalidFileException
 
 # Check of EfZ-Nachweis via DPSG NaMi 2.2 web interface
 # data from a Microsoft Excel spreadsheet is processed and updated
-
-
-QUERY_URL = "https://nami.dpsg.de/ica/sgb-acht-bescheinigung-pruefen"
-
-# only use the following two to check failure and success
-MSG_SUCCESS = '<p class="success-msg">'
-MSG_FAILURE = '<p class="failure-msg">'
-
-# these message have been seen in the HTTP response bodies (HTML)
-# '<p class="failure-msg">Bescheinigung ist NICHT gültig</p>'
-# '<p class="failure-msg">Die Echtheit der Bescheinigung kann nicht bestätigt werden.</p>'
-# '<p class="success-msg">Das Dokument ist echt. Die Bescheinigung wurde korrekt erstellt.</p>'
-
-# these are logically checked before querying the webpage and should never be seen!
-# '<p class="validation-msg">Identifikationsnummer: Feld ist ein Pflichtfeld.&lt;br&gt;</p>'
-# '<p class="validation-msg">Nachname: Feld ist ein Pflichtfeld.&lt;br&gt;</p>'
-# '<p class="validation-msg">Vorname: Feld ist ein Pflichtfeld.&lt;br&gt;</p>'
-# '<p class="validation-msg">Geburtsdatum: Feld ist ein Pflichtfeld.&lt;br&gt;</p>'
-
-
-def query_efz_status(cli_args, input_data):
-    timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-
-    complete = all(val != "" for val in input_data.values())
-
-    if cli_args.dry_run:
-        status = "Nicht angefragt"
-    elif not complete:
-        status = "Eingangsdaten unvollständig"  # TODO: could be more precise about what is missing
-    else:
-        status = "Ungültig oder Abfrage fehlerhaft"
-
-        r = requests.post(QUERY_URL, input_data, timeout=5)
-
-        try:
-            if r.status_code == requests.codes.ok:
-                if (MSG_SUCCESS in r.text) and not (MSG_FAILURE in r.text):
-                    status = "Gültig"
-        except:
-            # swallow bad requests for robustness (so that the script won't stop for a single entry)
-            # TODO: narrow it down and don't keep a bare exception handler this broad!
-            pass
-
-    return status, timestamp
 
 
 def get_cols_from_cli_args(cli_args):
@@ -151,8 +108,19 @@ def process_excel_file(cli_args):
 
     for row_idx in range(start_row, sheet.max_row + 1):
         req_data = get_query_input_from_sheet_row(cli_args, sheet, row_idx=row_idx)
+        timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
-        efz_status, timestamp = query_efz_status(cli_args, req_data)
+        efz_status = 'Prüfung fehlerhaft'
+        try:
+            check = BescheinigungsCheck(req_data['vorname'], req_data['nachname'], req_data['geburtsdatum'],
+                                        req_data['fzNummer'])
+            status = check.get_check_status()
+            if status:
+                efz_status = 'Gültig'
+            else:
+                efz_status = 'Ungültig'
+        except ValueError:
+            pass
 
         # visualize result (along with some input data) on the command line
         if not cli_args.dont_print:
@@ -193,8 +161,8 @@ if __name__ == "__main__":
 
     parser.add_argument('-n', '--dry-run',
                         action='store_true',
-                        help='Don''t actually send the HTTP requests to the server and '
-                             'don''t write back to the Excel file. just parse the input data.',
+                        help='Send the HTTP requests to the server but '
+                             'don''t write back to the Excel file.',
                         default=False)
 
     parser.add_argument('-dp', '--dont-print',

@@ -1,9 +1,22 @@
+#!/usr/bin/env python3
+
 class BescheinigungsCheck:
     QUERY_URL = "https://nami.dpsg.de/ica/sgb-acht-bescheinigung-pruefen"
 
     # only use the following two to check failure and success
     MSG_SUCCESS = '<p class="success-msg">'
     MSG_FAILURE = '<p class="failure-msg">'
+
+    # these message have been seen in the HTTP response bodies (HTML)
+    # '<p class="failure-msg">Bescheinigung ist NICHT gültig</p>'
+    # '<p class="failure-msg">Die Echtheit der Bescheinigung kann nicht bestätigt werden.</p>'
+    # '<p class="success-msg">Das Dokument ist echt. Die Bescheinigung wurde korrekt erstellt.</p>'
+
+    # these are logically checked before querying the webpage and should never be seen!
+    # '<p class="validation-msg">Identifikationsnummer: Feld ist ein Pflichtfeld.&lt;br&gt;</p>'
+    # '<p class="validation-msg">Nachname: Feld ist ein Pflichtfeld.&lt;br&gt;</p>'
+    # '<p class="validation-msg">Vorname: Feld ist ein Pflichtfeld.&lt;br&gt;</p>'
+    # '<p class="validation-msg">Geburtsdatum: Feld ist ein Pflichtfeld.&lt;br&gt;</p>'
 
     def __init__(self, firstnames, surname, birthdate, number):
         self.firstnames = firstnames

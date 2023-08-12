@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 from bescheinigungs_check import BescheinigungsCheck
 import os
 from tkinter import TOP, BOTTOM, Label, font
