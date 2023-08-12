@@ -111,5 +111,4 @@ class BescheinigungsCheck:
         firstnames = ' '.join(name[:-1])  # all other names go into firstname
         birthdate = lines[offset + 9]
 
-        print(f"From PDF file: {filename}")
         return cls(firstnames, surname, birthdate, number)
